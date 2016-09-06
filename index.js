@@ -108,6 +108,7 @@ function updateGraph(events) {
     Plotly.newPlot(streams[0], [traceA], layoutA);
 
     // Voltammetry
+    /*
     var potentialV = events.map(function (e) {
         if(e.getData().streamId==streams[1] && e.getData().type == "electromotive-force/v") return e.getData().content;
     });
@@ -127,6 +128,7 @@ function updateGraph(events) {
         }
     };
     Plotly.newPlot(streams[1], [traceV], layoutV);
+    */
 }
 
 function resetGraphs() {
