@@ -6,7 +6,7 @@ var monitor;
 // AUTH
 
 // Preliminary step: use staging environment (remove for use on production infrastructure)
-pryv.Auth.config.registerURL = {host: 'reg.pryv-switch.ch', 'ssl': true};
+pryv.Auth.config.registerURL = {host: 'reg.pryv.me', 'ssl': true};
 
 // Authenticate user
 var authSettings = {
