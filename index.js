@@ -1,5 +1,5 @@
 var connection;
-var stream = 'amperometry';
+var streams = ['amperometry','voltammetry'];
 var container = document.getElementById("pryvGraphs");
 var monitor;
 
@@ -46,7 +46,7 @@ pryv.Auth.setup(authSettings);
 
 // Setup monitoring for remote changes
 function setupMonitor() {
-    var filter = new pryv.Filter({streamsIds: [stream]});
+    var filter = new pryv.Filter({streamsIds: streams});
     monitor = connection.monitor(filter);
 
     // should be false by default, will be updated in next lib version
@@ -72,24 +72,30 @@ function setupMonitor() {
 // GRAPHS
 
 function loadGraphs() {
-    // Initialize graph
-    var graph = document.createElement('div');
-    graph.setAttribute("id", stream);
-    container.appendChild(graph);
+    streams.forEach(function(stream) {
+        // Initialize graphs
+        var graph = document.createElement('div');
+        graph.setAttribute("id", stream);
+        container.appendChild(graph);
+
+        // Initialize monitors
+        setupMonitor(stream);
+    });
 
     // Initialize monitor
     setupMonitor();
 }
 
 function updateGraph(events) {
-    var time = events.map(function (e) {
-        return e.getData().time;
+    // Amperometry
+    var timeA = events.map(function (e) {
+        if(e.getData().streamId==streams[0]) return e.getData().time;
     });
-    var current = events.map(function (e) {
-        return e.getData().content;
+    var currentA = events.map(function (e) {
+        if(e.getData().streamId==streams[0]) return e.getData().content;
     });
-    var trace = {x: time, y: current, mode: "lines", name: "Trace1", type: "scatter"};
-    var layout = {
+    var traceA = {x: timeA, y: currentA, mode: "lines", name: "Trace1", type: "scatter"};
+    var layoutA = {
         title: "Chrono Amperometry (from Pryv)",
         xaxis1: {
             anchor: "y1",
@@ -101,7 +107,30 @@ function updateGraph(events) {
             domain: [0.0, 1.0],
             title: "Current (uA)"
         }};
-    Plotly.newPlot("amperometry", [trace], layout);
+    Plotly.newPlot("amperometry", [traceA], layoutA);
+
+    // Voltammetry
+    var potentialV = events.map(function (e) {
+        if(e.getData().streamId==streams[1] && e.getData().type == "electromotive-force/v") return e.getData().content;
+    });
+    var currentV = events.map(function (e) {
+        if(e.getData().streamId==streams[1] && e.getData().type == "electric-current/a") return e.getData().content;
+    });
+    var traceV = {x: potentialV, y: currentV, mode: "lines", name: "Trace1", type: "scatter", xaxis: "x1", yaxis: "y1"};
+    var layoutV = {
+        title: "Cyclic Voltammetry",
+        xaxis1: {
+            anchor: "y1",
+            domain: [0.0, 1.0],
+            title: "Potential (Volts)"
+        },
+        yaxis1: {
+            anchor: "x1",
+            domain: [0.0, 1.0],
+            title: "Current (uA)"
+        }
+    };
+    Plotly.newPlot("voltammetry", [traceV], layoutV);
 }
 
 function resetGraphs() {
