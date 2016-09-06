@@ -94,20 +94,18 @@ function updateGraph(events) {
     var currentA = events.map(function (e) {
         if(e.getData().streamId==streams[0]) return e.getData().content;
     });
-    var traceA = {x: timeA, y: currentA, mode: "lines", name: "Trace1", type: "scatter", xaxis: "x1", yaxis: "y1"};
+    var traceA = {x: timeA, y: currentA, mode: "lines", name: "Trace1", type: "scatter"};
     var layoutA = {
         title: "Chrono Amperometry (from Pryv)",
         xaxis1: {
-            anchor: "y1",
-            domain: [0.0, 1.0],
-            title: "Time (seconds)"
+            title: "Time (seconds)",
+            showticklabels : false
         },
         yaxis1: {
-            anchor: "x1",
-            domain: [0.0, 1.0],
-            title: "Current (uA)"
+            title: "Current (uA)",
+            showticklabels : false
         }};
-    Plotly.newPlot("amperometry", [traceA], layoutA);
+    Plotly.newPlot(streams[0], [traceA], layoutA);
 
     // Voltammetry
     var potentialV = events.map(function (e) {
@@ -116,21 +114,19 @@ function updateGraph(events) {
     var currentV = events.map(function (e) {
         if(e.getData().streamId==streams[1] && e.getData().type == "electric-current/a") return e.getData().content;
     });
-    var traceV = {x: potentialV, y: currentV, mode: "lines", name: "Trace1", type: "scatter", xaxis: "x1", yaxis: "y1"};
+    var traceV = {x: potentialV, y: currentV, mode: "lines", name: "Trace1", type: "scatter"};
     var layoutV = {
         title: "Cyclic Voltammetry",
         xaxis1: {
-            anchor: "y1",
-            domain: [0.0, 1.0],
-            title: "Potential (Volts)"
+            title: "Potential (Volts)",
+            showticklabels : false
         },
         yaxis1: {
-            anchor: "x1",
-            domain: [0.0, 1.0],
-            title: "Current (uA)"
+            title: "Current (uA)",
+            showticklabels : false
         }
     };
-    Plotly.newPlot("voltammetry", [traceV], layoutV);
+    Plotly.newPlot(streams[1], [traceV], layoutV);
 }
 
 function resetGraphs() {
