@@ -94,7 +94,7 @@ function updateGraph(events) {
     var currentA = events.map(function (e) {
         if(e.getData().streamId==streams[0]) return e.getData().content;
     });
-    var traceA = {x: timeA, y: currentA, mode: "lines", name: "Trace1", type: "scatter"};
+    var traceA = {x: timeA, y: currentA, mode: "lines", name: "Trace1", type: "scatter", xaxis: "x1", yaxis: "y1"};
     var layoutA = {
         title: "Chrono Amperometry (from Pryv)",
         xaxis1: {
