@@ -84,12 +84,17 @@ function loadGraphs() {
 }
 
 function updateGraph(events) {
+
+    events = events.sort(function (a, b) {
+        return a.time - b.time;
+    });
+
     streams.forEach(function(stream) {
         var time = events.map(function (e) {
-            if(e.getData().streamId==stream) return e.getData().time;
+            if(e.streamId==stream) return e.time;
         });
         var data = events.map(function (e) {
-            if(e.getData().streamId==stream) return e.getData().content;
+            if(e.streamId==stream) return e.content;
         });
         var traceA = {x: time, y: data, mode: "lines", name: "Trace1", type: "scatter"};
         var layoutA = {
@@ -103,7 +108,8 @@ function updateGraph(events) {
                 showticklabels : false
             }};
 
-        Plotly.newPlot(stream, [traceA], layoutA);
+            Plotly.newPlot(stream, [traceA], layoutA);
+
     });
 }
 
