@@ -1,5 +1,5 @@
 var connection;
-var streams = ['amperometry','voltammetry'];
+var streams = ['amperometry'];
 var container = document.getElementById("pryvGraphs");
 var monitor;
 
@@ -10,7 +10,7 @@ pryv.Auth.config.registerURL = {host: 'reg.pryv.me', 'ssl': true};
 
 // Authenticate user
 var authSettings = {
-    requestingAppId: 'ironic-webapp',
+    requestingAppId: 'biovotion-webapp',
     requestedPermissions: [
         {
             streamId: '*',
@@ -106,29 +106,6 @@ function updateGraph(events) {
             showticklabels : false
         }};
     Plotly.newPlot(streams[0], [traceA], layoutA);
-
-    // Voltammetry
-    /*
-    var potentialV = events.map(function (e) {
-        if(e.getData().streamId==streams[1] && e.getData().type == "electromotive-force/v") return e.getData().content;
-    });
-    var currentV = events.map(function (e) {
-        if(e.getData().streamId==streams[1] && e.getData().type == "electric-current/a") return e.getData().content;
-    });
-    var traceV = {x: potentialV, y: currentV, mode: "lines", name: "Trace1", type: "scatter"};
-    var layoutV = {
-        title: "Cyclic Voltammetry",
-        xaxis1: {
-            title: "Potential (Volts)",
-            showticklabels : false
-        },
-        yaxis1: {
-            title: "Current (uA)",
-            showticklabels : false
-        }
-    };
-    Plotly.newPlot(streams[1], [traceV], layoutV);
-    */
 }
 
 function resetGraphs() {
