@@ -1,5 +1,5 @@
 var connection;
-var streams = ['biovotion-bpm', 'biovotion-test'];
+var streams = ['biovotion-bpm'];
 var container = document.getElementById("pryvGraphs");
 var monitor;
 
@@ -100,12 +100,12 @@ function updateGraph(events) {
         var layoutA = {
             title: stream,
             xaxis1: {
-                title: "Time (seconds)",
-                showticklabels : false
+                title: "Time",
+                showticklabels : true
             },
             yaxis1: {
                 title: stream,
-                showticklabels : false
+                showticklabels : true
             }};
 
             Plotly.newPlot(stream, [traceA], layoutA);
