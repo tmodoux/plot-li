@@ -1,5 +1,5 @@
 var connection;
-var streams = ['biovotion-bpm'];
+var streams = ['biovotion-bpm', 'biovotion-test'];
 var container = document.getElementById("pryvGraphs");
 var monitor;
 
@@ -84,26 +84,27 @@ function loadGraphs() {
 }
 
 function updateGraph(events) {
-    // BPM
-    var bpmTime = events.map(function (e) {
-        if(e.getData().streamId==streams[0]) return e.getData().time;
-    });
-    var bpm = events.map(function (e) {
-        if(e.getData().streamId==streams[0]) return e.getData().content;
-    });
-    var traceA = {x: bpmTime, y: bpm, mode: "lines", name: "Trace1", type: "scatter"};
-    var layoutA = {
-        title: "BPM",
-        xaxis1: {
-            title: "Time (seconds)",
-            showticklabels : false
-        },
-        yaxis1: {
-            title: "BPM",
-            showticklabels : false
-        }};
+    streams.forEach(function(stream) {
+        var time = events.map(function (e) {
+            if(e.getData().streamId==stream) return e.getData().time;
+        });
+        var data = events.map(function (e) {
+            if(e.getData().streamId==stream) return e.getData().content;
+        });
+        var traceA = {x: time, y: data, mode: "lines", name: "Trace1", type: "scatter"};
+        var layoutA = {
+            title: stream,
+            xaxis1: {
+                title: "Time (seconds)",
+                showticklabels : false
+            },
+            yaxis1: {
+                title: stream,
+                showticklabels : false
+            }};
 
-    Plotly.newPlot(streams[0], [traceA], layoutA);
+        Plotly.newPlot(stream, [traceA], layoutA);
+    });
 }
 
 function resetGraphs() {
