@@ -1,5 +1,5 @@
 var connection;
-var streams = ['amperometry'];
+var streams = ['biovotion-bpm'];
 var container = document.getElementById("pryvGraphs");
 var monitor;
 
@@ -77,9 +77,6 @@ function loadGraphs() {
         var graph = document.createElement('div');
         graph.setAttribute("id", stream);
         container.appendChild(graph);
-
-        // Initialize monitors
-        setupMonitor(stream);
     });
 
     // Initialize monitor
@@ -87,24 +84,25 @@ function loadGraphs() {
 }
 
 function updateGraph(events) {
-    // Amperometry
-    var timeA = events.map(function (e) {
+    // BPM
+    var bpmTime = events.map(function (e) {
         if(e.getData().streamId==streams[0]) return e.getData().time;
     });
-    var currentA = events.map(function (e) {
+    var bpm = events.map(function (e) {
         if(e.getData().streamId==streams[0]) return e.getData().content;
     });
-    var traceA = {x: timeA, y: currentA, mode: "lines", name: "Trace1", type: "scatter"};
+    var traceA = {x: bpmTime, y: bpm, mode: "lines", name: "Trace1", type: "scatter"};
     var layoutA = {
-        title: "Chrono Amperometry (from Pryv)",
+        title: "BPM",
         xaxis1: {
             title: "Time (seconds)",
             showticklabels : false
         },
         yaxis1: {
-            title: "Current (uA)",
+            title: "BPM",
             showticklabels : false
         }};
+
     Plotly.newPlot(streams[0], [traceA], layoutA);
 }
 
