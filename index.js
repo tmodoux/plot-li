@@ -31,7 +31,10 @@ var authSettings = {
         needValidation: null,
         signedIn: function (connect, langCode) {
             connection = connect;
+          connection.fetchStructure(function (done) {
+
             setupMonitor();
+          });
         },
         refused: function (reason) {
         },
@@ -56,12 +59,13 @@ function setupMonitor() {
 
     // get notified when monitoring starts
     monitor.addEventListener(pryv.MESSAGES.MONITOR.ON_LOAD, function (events) {
-        updateGraph(monitor.getEvents());
+        updateGraph(events);
+
     });
 
     // get notified when data changes
     monitor.addEventListener(pryv.MESSAGES.MONITOR.ON_EVENT_CHANGE, function (changes) {
-        updateGraph(monitor.getEvents());
+        updateGraph(changes.created);
     });
 
     // start monitoring
@@ -69,59 +73,100 @@ function setupMonitor() {
     });
 }
 
+
+var graphs = {};
+
+
+function getDateString(timestamp) {
+  var date = new Date(timestamp);
+  return date.toISOString().substring(0, 10) + ' '
+    + date.toISOString().substring(11, 19) + '.' + date.getMilliseconds();
+}
+
+function createGraph(event) {
+  var graphKey = event.streamId + '_' + event.type;
+
+  if (! pryv.eventTypes.isNumerical(event)) {
+    graphs[graphKey] = { ignore : true};
+    return;
+  }
+
+  var extraType = pryv.eventTypes.extras(event.type);
+
+  var titleY = extraType.symbol ? extraType.symbol : event.type;
+
+
+  var title = '';
+  event.stream.ancestors.forEach(function (ancestor) { 
+     title += ancestor.name + '/';
+  });
+  title += event.stream.name;
+
+
+  graphs[graphKey] = {
+    type: event.type,
+    streamId: event.streamId + ' ' + titleY,
+    trace: {
+      x: [],
+      y: [],
+      mode: 'lines',
+      name: event.stream.name,
+      type: 'scatter'
+    },
+    layout : {
+      title: title,
+      xaxis1: {
+        title: 'Time',
+        showticklabels : true
+      },
+      yaxis1: {
+        title: titleY,
+        showticklabels : true
+      }
+    }
+  };
+  if (document.getElementById(graphKey) === null) {
+    var graph = document.createElement('div');
+    graph.setAttribute('id', graphKey);
+    container.appendChild(graph);
+  };
+  Plotly.newPlot(graphKey, [graphs[graphKey].trace], graphs[graphKey].layout);
+}
+
+
+
 // GRAPHS
 function updateGraph(events) {
+    // needed ?
+    events = events.sort(function (a, b) {
+      return a.time - b.time;
+    });
 
-    streams.forEach(function(stream) {
-        var types = events.map(function (e) {
-            if(e.streamId==stream) return e.type;
-        });
+    var toRedraw = {};
 
-        var uniqueTypes = types.filter(function(elem, index, self) {
-            return index == self.indexOf(elem);
-        });
+    events.map(function (event) {
+      var graphKey = event.streamId + '_' + event.type;
+      if (! graphs[graphKey]) { // create New Trace
+        createGraph(event);
+      }
 
-        // Update data
-        uniqueTypes.forEach(function(type) {
+      if (! graphs[graphKey].ignore) {
+        graphs[graphKey].trace.x.push(getDateString(event.timeLT));
+        graphs[graphKey].trace.y.push(event.content);
 
-            var graphName = stream + '_' + type;
+        toRedraw[graphKey] = true;
+      }
 
-            // Initialize graphs
-            if(document.getElementById(graphName) === null) {
-                var graph = document.createElement('div');
-                graph.setAttribute("id", graphName);
-                container.appendChild(graph);
-            };
-
-            var filteredEvents = events.map(function (e) {
-                if(e.streamId==stream && e.type===type) return e;
-            });
-
-            filteredEvents = filteredEvents.sort(function (a, b) {
-                return a.time - b.time;
-            });
-
-            var time = filteredEvents.map(function(e) {return e.time;});
-
-            var data = filteredEvents.map(function(e) {return e.content;});
-
-            var traceA = {x: time, y: data, mode: "lines", name: "Trace1", type: "scatter"};
-            var layoutA = {
-                title: stream + ' (' + type + ')',
-                xaxis1: {
-                    title: "Time",
-                    showticklabels : false
-                },
-                yaxis1: {
-                    title: type,
-                    showticklabels : true
-                }};
-
-            Plotly.newPlot(graphName, [traceA], layoutA);
-        });
 
     });
-}
+
+     Object.keys(toRedraw).forEach(function (graphKey) {
+         Plotly.redraw(graphKey);
+     });
+
+
+};
+
 
 function resetGraphs() {
     if (monitor) {
