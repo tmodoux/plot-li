@@ -72,8 +72,6 @@ function setupMonitor() {
 // GRAPHS
 function updateGraph(events) {
 
-    //if(!events || events.length<1) return;
-
     streams.forEach(function(stream) {
         var types = events.map(function (e) {
             if(e.streamId==stream) return e.type;
@@ -82,8 +80,6 @@ function updateGraph(events) {
         var uniqueTypes = types.filter(function(elem, index, self) {
             return index == self.indexOf(elem);
         });
-
-        //if(!uniqueTypes || uniqueTypes.length<1) return;
 
         // Update data
         uniqueTypes.forEach(function(type) {
@@ -101,19 +97,13 @@ function updateGraph(events) {
                 if(e.streamId==stream && e.type===type) return e;
             });
 
-            //if(!filteredEvents || filteredEvents.length<1) return;
-
             filteredEvents = filteredEvents.sort(function (a, b) {
                 return a.time - b.time;
             });
 
             var time = filteredEvents.map(function(e) {return e.time;});
 
-            //if(!time || time.length<1) return;
-
             var data = filteredEvents.map(function(e) {return e.content;});
-
-            //if(!data || data.length<1) return;
 
             var traceA = {x: time, y: data, mode: "lines", name: "Trace1", type: "scatter"};
             var layoutA = {
