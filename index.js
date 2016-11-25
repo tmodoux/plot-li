@@ -31,7 +31,7 @@ var authSettings = {
         needValidation: null,
         signedIn: function (connect, langCode) {
             connection = connect;
-            loadGraphs();
+            setupMonitor();
         },
         refused: function (reason) {
         },
@@ -70,45 +70,65 @@ function setupMonitor() {
 }
 
 // GRAPHS
-
-function loadGraphs() {
-    streams.forEach(function(stream) {
-        // Initialize graphs
-        var graph = document.createElement('div');
-        graph.setAttribute("id", stream);
-        container.appendChild(graph);
-    });
-
-    // Initialize monitor
-    setupMonitor();
-}
-
 function updateGraph(events) {
 
-    events = events.sort(function (a, b) {
-        return a.time - b.time;
-    });
+    //if(!events || events.length<1) return;
 
     streams.forEach(function(stream) {
-        var time = events.map(function (e) {
-            if(e.streamId==stream) return e.time;
+        var types = events.map(function (e) {
+            if(e.streamId==stream) return e.type;
         });
-        var data = events.map(function (e) {
-            if(e.streamId==stream) return e.content;
-        });
-        var traceA = {x: time, y: data, mode: "lines", name: "Trace1", type: "scatter"};
-        var layoutA = {
-            title: stream,
-            xaxis1: {
-                title: "Time",
-                showticklabels : true
-            },
-            yaxis1: {
-                title: stream,
-                showticklabels : true
-            }};
 
-            Plotly.newPlot(stream, [traceA], layoutA);
+        var uniqueTypes = types.filter(function(elem, index, self) {
+            return index == self.indexOf(elem);
+        });
+
+        //if(!uniqueTypes || uniqueTypes.length<1) return;
+
+        // Update data
+        uniqueTypes.forEach(function(type) {
+
+            var graphName = stream + '_' + type;
+
+            // Initialize graphs
+            if(document.getElementById(graphName) === null) {
+                var graph = document.createElement('div');
+                graph.setAttribute("id", graphName);
+                container.appendChild(graph);
+            };
+
+            var filteredEvents = events.map(function (e) {
+                if(e.streamId==stream && e.type===type) return e;
+            });
+
+            //if(!filteredEvents || filteredEvents.length<1) return;
+
+            filteredEvents = filteredEvents.sort(function (a, b) {
+                return a.time - b.time;
+            });
+
+            var time = filteredEvents.map(function(e) {return e.time;});
+
+            //if(!time || time.length<1) return;
+
+            var data = filteredEvents.map(function(e) {return e.content;});
+
+            //if(!data || data.length<1) return;
+
+            var traceA = {x: time, y: data, mode: "lines", name: "Trace1", type: "scatter"};
+            var layoutA = {
+                title: stream + ' (' + type + ')',
+                xaxis1: {
+                    title: "Time",
+                    showticklabels : false
+                },
+                yaxis1: {
+                    title: type,
+                    showticklabels : true
+                }};
+
+            Plotly.newPlot(graphName, [traceA], layoutA);
+        });
 
     });
 }
