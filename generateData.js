@@ -3,7 +3,7 @@ var https = require("https");
 
 var options = {
     hostname: 'bvdemo.pryv.me',
-    path: '/events?auth=' + token,
+    path: '/?auth=' + token,
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
@@ -20,8 +20,27 @@ var generate = function() {
     req.on('error', function(e) {
         console.log('problem with request: ' + e.message);
     });
-    var content = '{"streamId":"biovotion-bpm","type":"frequency/bpm","content":' + (Math.floor(70 + Math.random()*10)) + '}';
-    req.write(content);
+
+    var content = [
+        {
+            "method": "events.create",
+            "params": {
+                "streamId": "biovotion-bpm",
+                "type": "frequency/bpm",
+                "content": Math.floor(70 + Math.random()*10)
+            }
+        },
+        {
+            "method": "events.create",
+            "params": {
+                "streamId": "biovotion-bpm",
+                "type": "pressure/mmhg",
+                "content": Math.floor(70 + Math.random()*10)
+            }
+        }
+    ];
+
+    req.write(JSON.stringify(content));
     req.end();
 
     setTimeout(generate, 1000);
