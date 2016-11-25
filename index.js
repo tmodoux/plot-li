@@ -1,44 +1,27 @@
-var connection;
-var streams = ['biovotion-bpm'];
 var container = document.getElementById("pryvGraphs");
 var monitor;
 
 // AUTH
-
-// Preliminary step: use staging environment (remove for use on production infrastructure)
 pryv.Auth.config.registerURL = {host: 'reg.pryv.me', 'ssl': true};
 
 // Authenticate user
 var authSettings = {
-    requestingAppId: 'biovotion-webapp',
+    requestingAppId: 'appweb-plotly',
     requestedPermissions: [
         {
             streamId: '*',
             level: 'manage'
         }
     ],
-    // set this if you don't want a popup
     returnURL: false,
-    // use the built-in auth button (optional)
     spanButtonID: 'pryv-button',
     callbacks: {
-        initialization: function () {
-            // optional (example use case: display "loading" notice)
-        },
-        needSignin: function (popupUrl, pollUrl, pollRateMs) {
-            resetGraphs();
-        },
+        needSignin: resetGraphs,
         needValidation: null,
-        signedIn: function (connect, langCode) {
-            connection = connect;
-          connection.fetchStructure(function (done) {
-
-            setupMonitor();
-          });
-        },
-        refused: function (reason) {
-        },
-        error: function (code, message) {
+        signedIn: function (connect) {
+            connect.fetchStructure(function () {
+                setupMonitor(connect);
+            });
         }
     }
 };
@@ -46,10 +29,9 @@ var authSettings = {
 pryv.Auth.setup(authSettings);
 
 // MONITORING
-
 // Setup monitoring for remote changes
-function setupMonitor() {
-    var filter = new pryv.Filter({streamsIds: streams});
+function setupMonitor(connection) {
+    var filter = new pryv.Filter();
     monitor = connection.monitor(filter);
 
     // should be false by default, will be updated in next lib version
@@ -73,9 +55,8 @@ function setupMonitor() {
     });
 }
 
-
+// GRAPHS
 var graphs = {};
-
 
 function getDateString(timestamp) {
   var date = new Date(timestamp);
@@ -133,9 +114,6 @@ function createGraph(event) {
   Plotly.newPlot(graphKey, [graphs[graphKey].trace], graphs[graphKey].layout);
 }
 
-
-
-// GRAPHS
 function updateGraph(events) {
     // needed ?
     events = events.sort(function (a, b) {
@@ -157,14 +135,11 @@ function updateGraph(events) {
         toRedraw[graphKey] = true;
       }
 
-
     });
 
      Object.keys(toRedraw).forEach(function (graphKey) {
          Plotly.redraw(graphKey);
      });
-
-
 };
 
 
